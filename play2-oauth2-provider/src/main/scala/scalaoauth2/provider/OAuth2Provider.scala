@@ -226,3 +226,7 @@ trait OAuth2AsyncProvider extends OAuth2BaseProvider {
   }
 
 }
+
+trait OAuth2ProviderNoClientCred extends OAuth2Provider {
+  override val tokenEndpoint = TokenEndpointNoClientCred
+}
