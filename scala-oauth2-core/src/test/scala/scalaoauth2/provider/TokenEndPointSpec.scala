@@ -100,8 +100,9 @@ class TokenEndPointSpec extends FlatSpec with ScalaFutures {
     )
 
     val dataHandler = successfulDataHandler()
-    val passwordNoCred = new Password(ClientCredentialFetcher)
-    passwordNoCred.clientCredentialRequired = false
+    val passwordNoCred = new Password(ClientCredentialFetcher) {
+      override def clientCredentialRequired = false
+    }
     class MyTokenEndpoint extends TokenEndpoint {
       override val handlers = Map(
         "password" -> passwordNoCred

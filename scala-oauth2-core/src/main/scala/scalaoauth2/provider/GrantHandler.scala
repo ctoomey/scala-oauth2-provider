@@ -7,11 +7,11 @@ case class GrantHandlerResult(tokenType: String, accessToken: String, expiresIn:
 
 trait GrantHandler {
   /**
-   * Controls whether client credentials are required.  Defaults to true but can be set to false when needed.  Per the
-   * OAuth2 specification, client credentials are required for all grant types except password, where it is up to the
-   * authorization provider whether to make them required or not.
+   * Controls whether client credentials are required.  Defaults to true but can be overridden to be false when needed.
+   * Per the OAuth2 specification, client credentials are required for all grant types except password, where it is up
+   * to the authorization provider whether to make them required or not.
    */
-  var clientCredentialRequired = true
+  def clientCredentialRequired = true
 
   def handleRequest[U](request: AuthorizationRequest, dataHandler: DataHandler[U]): Future[GrantHandlerResult]
 
@@ -80,7 +80,7 @@ class Password(clientCredentialFetcher: ClientCredentialFetcher) extends GrantHa
     dataHandler.findUser(username, password).flatMap { userOption =>
       val user = userOption.getOrElse(throw new InvalidGrant("username or password is incorrect"))
       val scope = request.scope
-      val clientId = clientCredential map { cred => cred.clientId }
+      val clientId = clientCredential.map { _.clientId }
       val authInfo = AuthInfo(user, clientId, scope, None)
 
       issueAccessToken(dataHandler, authInfo)

@@ -135,8 +135,9 @@ type handler to not require client credentials:
 
 ```scala
 class MyTokenEndpoint extends TokenEndpoint {
-  val passwordNoCred = new Password(ClientCredentialFetcher)
-  passwordNoCred.clientCredentialRequired = false
+  val passwordNoCred = new Password(ClientCredentialFetcher) {
+    override def clientCredentialRequired = false
+  }
 
   override val handlers = Map(
     "password" -> passwordNoCred

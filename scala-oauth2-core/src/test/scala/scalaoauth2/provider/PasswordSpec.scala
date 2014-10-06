@@ -9,8 +9,9 @@ import scala.concurrent.Future
 class PasswordSpec extends FlatSpec with ScalaFutures {
 
   val passwordClientCredReq = new Password(new MockClientCredentialFetcher())
-  val passwordNoClientCredReq = new Password(new MockClientCredentialFetcher())
-  passwordNoClientCredReq.clientCredentialRequired = false
+  val passwordNoClientCredReq = new Password(new MockClientCredentialFetcher()) {
+    override def clientCredentialRequired = false
+  }
 
   "Password when client credential required" should "handle request" in handlesRequest(passwordClientCredReq)
   "Password when client credential not required" should "handle request" in handlesRequest(passwordNoClientCredReq)
