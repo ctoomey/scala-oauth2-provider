@@ -3,7 +3,7 @@ package scalaoauth2.provider
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TokenEndpoint(clientCredReq: Boolean = true) {
+trait TokenEndpoint {
   val fetcher = ClientCredentialFetcher
 
   val handlers = Map(
@@ -16,6 +16,7 @@ class TokenEndpoint(clientCredReq: Boolean = true) {
   def handleRequest[U](request: AuthorizationRequest, dataHandler: DataHandler[U]): Future[Either[OAuthError, GrantHandlerResult]] = try {
     val grantType = request.grantType.getOrElse(throw new InvalidRequest("grant_type is not found"))
     val handler = handlers.get(grantType).getOrElse(throw new UnsupportedGrantType("The grant_type is not supported"))
+    val clientCredReq = handler.clientCredentialRequired
     val clientCredential = fetcher.fetch(request)
 
     if (clientCredential.nonEmpty) {
@@ -31,7 +32,9 @@ class TokenEndpoint(clientCredReq: Boolean = true) {
     } else if (clientCredReq) {
       throw new InvalidRequest("Client credential is not found")
     } else {
-      handler.handleRequest(request, dataHandler).map(Right(_))
+      handler.handleRequest(request, dataHandler).map(Right(_)).recover {
+        case e: OAuthError => Left(e)
+      }
     }
 
   } catch {
@@ -39,6 +42,4 @@ class TokenEndpoint(clientCredReq: Boolean = true) {
   }
 }
 
-object TokenEndpoint extends TokenEndpoint(true)
-
-object TokenEndpointNoClientCred extends TokenEndpoint(false)
+object TokenEndpoint extends TokenEndpoint
